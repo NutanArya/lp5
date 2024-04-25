@@ -15,18 +15,32 @@ void bfs(int start_node) {
     visited.insert(start_node);
 
     while (!q.empty()) {
-        int current_node = q.front();
-        q.pop();
+        #pragma omp parallel
+        {
+            #pragma omp single nowait
+            {
 
-        // Process current node
-        cout << "Processing node: " << current_node << endl;
+                int current_node = q.front();
+                q.pop();
 
-        // Enqueue unvisited neighbors
-        for (int neighbor : graph[current_node]) {
-            if (visited.find(neighbor) == visited.end()) {
-                q.push(neighbor);
-                visited.insert(neighbor);
+                // Process current node
+                cout << "Processing node: " << current_node << endl;
+
+                #pragma omp for
+                // Enqueue unvisited neighbors
+                for (int neighbor : graph[current_node]) {
+                    if (visited.find(neighbor) == visited.end()) {
+                        
+                        #pragma omp critical
+                        {
+
+                            q.push(neighbor);
+                            visited.insert(neighbor);
+                        }
+                    }
+                }
             }
+
         }
     }
 }
